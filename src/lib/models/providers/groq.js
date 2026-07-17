@@ -35,13 +35,26 @@ export const groqProvider = {
             throw new Error('GROQ_API_KEY is not defined in environment variables.');
         }
 
-       const {object} = await generateObject({
-        model: groq.chat('llama-3.3-70b-versatile'),
-        prompt,
-        schema,
-        ...options,
-       })
+         // 1. Append the schema instructions directly to the prompt
+        const schemaInstructions = `
+            You must return your response as a valid JSON object matching this schema:
+            ${JSON.stringify(/** @type {any} */ (schema).shape, null, 2)}
+            Return ONLY the raw JSON object. Do not wrap it in markdown formatting (like \`\`\`json) and do not write any conversational text.`;
 
-        return object;
+        // 2. Call our standard text generator
+        const responseText = await this.generate(`${prompt}\n${schemaInstructions}`, options);
+
+        // 3. Parse and validate the response against the Zod schema
+        try {
+            // Strip code block markers if the model accidentally included them
+            const cleanJSON = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const parsed = JSON.parse(cleanJSON);
+            
+            // Validate the structure using Zod
+            return schema.parse(parsed);
+        } catch (err) {
+            throw new Error(`Groq failed to return valid JSON matching the schema: ${err.message}. Raw output: ${responseText}`);
+        }
     }
+
 }
