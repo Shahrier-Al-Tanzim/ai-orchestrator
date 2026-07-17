@@ -1,10 +1,11 @@
 // @ts-check
-import { geminiProvider } from "./providers/gemini";
-import { groqProvider } from "./providers/groq";
-import { mistralProvider } from "./providers/mistral";
+import { geminiProvider } from "./providers/gemini.js";
+import { groqProvider } from "./providers/groq.js";
+import { mistralProvider } from "./providers/mistral.js";
+import { mistralNemoProvider } from "./providers/mistralNemo.js";
 
 /**
- * AMpping of medl IDs tot their respective provider instances
+ * Mapping of model IDs to their respective provider instances
  * @type {Record<string, import('./types').ModelProvider>}
  */
 
@@ -12,6 +13,7 @@ const providerMap = {
     [geminiProvider.id] : geminiProvider,
     [groqProvider.id] : groqProvider,
     [mistralProvider.id] : mistralProvider,
+    [mistralNemoProvider.id] : mistralNemoProvider,
 };
 
 /**

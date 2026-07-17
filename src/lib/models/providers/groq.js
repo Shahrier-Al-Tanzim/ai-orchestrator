@@ -22,7 +22,7 @@ export const groqProvider = {
         }
 
         const {text} = await generateText({
-            model: groq('llama-3.3-70b-versatile'),
+            model: groq.chat('llama-3.3-70b-versatile'),
             prompt,
             ...options,
         });
@@ -36,7 +36,7 @@ export const groqProvider = {
         }
 
        const {object} = await generateObject({
-        model: groq('llama-3.3-70b-versatile'),
+        model: groq.chat('llama-3.3-70b-versatile'),
         prompt,
         schema,
         ...options,
