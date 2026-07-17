@@ -1,8 +1,9 @@
+// @ts-check 
 // Initialize the Google Gemini client
 // IT autmatiocally reads process.env.GEMINI_API_KEY
 
-import { generateObject } from 'ai';
-
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { generateText, generateObject } from 'ai';
 const google = createGoogleGenerativeAI({
     apiKey: process.env.GEMINI_API_KEY,
 });
@@ -26,7 +27,7 @@ export const geminiProvider = {
         return text;
     },
 
-    async generateStructued(prompt, schema, options = {}) {
+    async generateStructured(prompt, schema, options = {}) {
         if(!process.env.GEMINI_API_KEY) {
             throw new Error('GEMINI_API_KEY is not defined in environment variables.');
         }
