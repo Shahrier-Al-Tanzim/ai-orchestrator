@@ -12,7 +12,7 @@ async function main() {
 
   const testPrompt = "Write a one-sentence definition of open-source software.";
   const testModels = [
-    'gemini-3.5-flash',
+    'gemini-3.1-flash-lite',
     'groq-llama-3-3-70b',
     'open-mistral-nemo',
   ];
