@@ -21,7 +21,7 @@ export async function runSelfConsistencyOrchestrator(prompt, modelIds, evaluator
     const parallelResults = await runParallelModels(prompt, modelIds);
     const runnerDuration = ((Date.now() - runnerStart) / 1000).toFixed(2);
 
-    // 2. Synthesiszew results using the evaluatr model
+    // 2. Synthesisze results using the evaluatr model
     console.log(`[Pipeline] Initiating synthesis stage using evaluator "${evaluatorModelId}"...`);
     const synthesisStart = Date.now();
     const evaluationResult = await evaluateResponses(prompt, parallelResults, evaluatorModelId);
