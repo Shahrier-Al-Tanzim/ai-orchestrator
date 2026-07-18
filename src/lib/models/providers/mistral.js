@@ -23,7 +23,7 @@ export const mistralProvider = {
         }
 
         const {text} = await generateText({
-            model: mistral('mistral-large-latest'),
+            model: mistral.chat('mistral-large-latest'),
             prompt,
             ...options,
         });
@@ -36,7 +36,7 @@ export const mistralProvider = {
         }
 
         const {object} = await generateObject({
-            model: mistral('mistral-large-latest'),
+            model: mistral.chat('mistral-large-latest'),
             prompt,
             schema,
             ...options,
