@@ -15,6 +15,6 @@
 export const AVAILABLE_MODELS = [
     { id: 'gemini-3.1-flash-lite', label: 'Google — Gemini 3.1 Flash Lite', tier: 'free' },
     { id: 'groq-llama-3-3-70b', label: 'Groq — Llama 3.3 70B', tier: 'free' },
-    { id: 'mistral-large', label: 'Mistral — Large', tier: 'free' },
     { id: 'open-mistral-nemo', label: 'Mistral — Nemo', tier: 'free' },
+    { id: 'mistral-large', label: 'Mistral — Large (Very Slow)', tier: 'free' },
 ];
