@@ -5,6 +5,9 @@ import { z } from 'zod';
  * Zod Schema for validation and structure of the evaluator model response.
  * This guarantees the exact shape of JSON returned by the evaluator model.
  */
+/**
+ * @typedef {z.infer<typeof EvaluatorResponseSchema>} EvaluatorResponse
+ */
 export const EvaluatorResponseSchema = z.object({
   finalAnswer: z.string().describe('The refined, synthesized best answer for the user'),
   reasoning: z.string().describe('Brief explanation of how the final answer was constructed from the model contributions'),
@@ -16,3 +19,4 @@ export const EvaluatorResponseSchema = z.object({
   ).describe('Mapping of what each model contributed'),
   confidence: z.enum(['low', 'medium', 'high']).describe('Evaluation confidence level in the generated final answer'),
 });
+

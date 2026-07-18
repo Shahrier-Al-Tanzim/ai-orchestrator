@@ -10,8 +10,8 @@ const google = createGoogleGenerativeAI({
 
 /** @type {import('../types').ModelProvider} */
 export const geminiProvider = {
-    id: 'gemini-3.5-flash',
-    label: 'Google — Gemini 3.5 Flash',
+    id: 'gemini-3.1-flash-lite',
+    label: 'Google — Gemini 3.1 Flash Lite',
 
     async generate(prompt, options = {}) {
         if(!process.env.GEMINI_API_KEY) {
@@ -19,7 +19,7 @@ export const geminiProvider = {
         }
 
         const {text} = await generateText({
-            model: google("gemini-3.5-flash"),
+            model: google("gemini-3.1-flash-lite"),
             prompt, 
             ...options,
         });
@@ -33,7 +33,7 @@ export const geminiProvider = {
         }
 
         const {object} = await generateObject({
-            model: google('gemini-3.5-flash'),
+            model: google('gemini-3.1-flash-lite'),
             prompt,
             schema,
             ...options,

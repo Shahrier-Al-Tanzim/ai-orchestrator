@@ -10,7 +10,7 @@ async function main() {
   // Mock answers to simulate a parallel run
   const mockResults = [
     {
-      modelId: 'gemini-3.5-flash',
+      modelId: 'gemini-3.1-flash-lite',
       response: "Melbourne is the capital of france with 2 people"
     },
     {
