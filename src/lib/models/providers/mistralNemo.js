@@ -1,6 +1,6 @@
 // @ts-check
 import { createOpenAI } from '@ai-sdk/openai';
-import { generateText, generateObject } from 'ai';
+import { generateText, generateObject, streamText  } from 'ai';
 
 const mistral = createOpenAI({
   baseURL: 'https://api.mistral.ai/v1',
@@ -23,6 +23,18 @@ export const mistralNemoProvider = {
       ...options,
     });
     return text;
+  },
+
+  async stream(prompt, options = {}) {
+    if (!process.env.MISTRAL_API_KEY) {
+      throw new Error('MISTRAL_API_KEY is not defined in environment variables.');
+    }
+    const { textStream } = await streamText({
+      model: mistral.chat('open-mistral-nemo'),
+      prompt,
+      ...options,
+    });
+    return textStream;
   },
 
   async generateStructured(prompt, schema, options = {}) {
