@@ -77,7 +77,8 @@ export const groqProvider = {
             CRITICAL FORMATTING RULES:
             1. "contributions" MUST be a JSON array of objects. Never return it as a single string.
             2. "confidence" MUST be exactly one of these three lowercase values: "low", "medium", or "high". Do not add any explanation, capitalization, or extra characters to the confidence value.
-            3. Return ONLY the raw JSON object. Do not wrap it in markdown code block formatting (like \`\`\`json) and do not write any conversational text.`;
+            3. Escape all newlines inside string values as '\\n'. Do not output raw unescaped newlines inside string properties.
+            4. Return ONLY the raw JSON object. Do not wrap it in markdown code block formatting (like \`\`\`json) and do not write any conversational text.`;
 
         // 3. Call our standard text generator
         const responseText = await this.generate(`${prompt}\n${schemaInstructions}`, options);
@@ -86,7 +87,25 @@ export const groqProvider = {
         try {
             // Strip code block markers if the model accidentally included them
             const cleanJSON = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-            const parsed = JSON.parse(cleanJSON);
+            
+            // Helper to escape raw newlines inside double-quoted string literals
+            let inQuote = false;
+            let sanitizedJSON = '';
+            for (let i = 0; i < cleanJSON.length; i++) {
+                const char = cleanJSON[i];
+                if (char === '"' && (i === 0 || cleanJSON[i - 1] !== '\\')) {
+                    inQuote = !inQuote;
+                }
+                if (inQuote && char === '\n') {
+                    sanitizedJSON += '\\n';
+                } else if (inQuote && char === '\r') {
+                    // Ignore carriage returns
+                } else {
+                    sanitizedJSON += char;
+                }
+            }
+            
+            const parsed = JSON.parse(sanitizedJSON);
             
             // Validate the structure using Zod
             return schema.parse(parsed);
