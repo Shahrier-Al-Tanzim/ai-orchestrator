@@ -10,12 +10,15 @@ This project implements a **Self-Consistency Orchestration Pattern** to mitigate
 
 ## 🚀 Key Features
 
+* **Real-Time Streaming Engine**:
+  * **Concurrent Multiplexing**: Selected parallel models generate outputs concurrently, streaming their responses side-by-side in real-time.
+  * **Word-by-Word Evaluator Synthesis**: The evaluator LLM streams its final synthesized answer chunk-by-chunk using a stateful JSON scanner.
 * **Dual Interface**:
-  * **Web-Based UI**: A premium Next.js App Router dashboard styled in dark mode using Tailwind CSS. It supports dynamic configuration (select up to 3 models to prompt concurrently and 1 model to evaluate) and displays final answers side-by-side with intermediate raw outputs.
+  * **Web-Based UI**: A premium Next.js App Router dashboard styled in a matte-charcoal dark mode using Tailwind CSS. Supports dynamic configurations and displays active streams side-by-side.
   * **CLI-Based Scripts**: Console-based test scripts for independent validation of runner, evaluator, and end-to-end pipeline stages.
 * **Multi-Provider LLM Layer**: Exposes unified interfaces for:
   * **Google Generative AI**: using `gemini-3.1-flash-lite`.
-  * **Groq Cloud**: using `groq-llama-3-3-70b`.
+  * **Groq Cloud**: using `groq-llama-3-3-70b-versatile`.
   * **Mistral API**: using `open-mistral-nemo` and `mistral-large`.
 * **Custom JSON Fallback Parser**: A robust fallback mechanism that automatically injects a human-readable Zod schema template and parsing rules into text prompts for providers that lack native API-level JSON Schema validation (like Groq), preventing JSON parsing crashes.
 * **Context-Aware Comparison Evaluator**: The synthesis model detects the prompt context (factual trivia vs. subjective trade-off comparisons) and dynamically adjusts its evaluation method (strict right/wrong checks vs. depth of reasoning/opinion analysis).
@@ -27,10 +30,11 @@ This project implements a **Self-Consistency Orchestration Pattern** to mitigate
 This project is built using a modern, production-ready stack where each tool plays a specific role:
 
 * **Next.js (App Router)**: Orchestrates the overall application lifecycle. Handles serverless backend route routing (`src/app/api/orchestrate/route.js`) and serves as the React framework for rendering the interactive dashboard UI.
-* **Vercel AI SDK (`ai`)**: Standardizes LLM integration. Provides the core `generateText` and `generateObject` hooks and handles API routing adapters for Google Gemini (`@ai-sdk/google`) and Mistral (`@ai-sdk/mistral`).
+* **Server-Sent Events (SSE)**: Enables real-time uni-directional data streaming from the Next.js API route to the browser using a custom `ReadableStream` piped over `text/event-stream`.
+* **Vercel AI SDK (`ai`)**: Standardizes LLM integration. Provides the core `generateText`, `streamText`, and structured JSON hooks across Google, Groq, and Mistral.
 * **Zod**: Defines structural validation. Formulates the exact type shapes and rules (schema) that the evaluator model's response must conform to. Also performs runtime parsing to catch and discard invalid model outputs.
 * **Tailwind CSS**: Utility-first CSS framework used to build the dark-mode dashboard UI (glassmorphism containers, grid systems, responsive layouts, hover states, and animations).
-* **dotenv**: Manages configuration secrets. Loads `.env.local` variables into local Node.js environments, ensuring local console test scripts execute identically to Vercel serverless functions.
+* **Custom Markdown Parser**: A lightweight, zero-dependency parser written in React to format inline bolding, lists, and headers in real-time as the stream generates.
 
 ---
 
@@ -95,6 +99,25 @@ To ensure clean separation of concerns and maintainable code, the codebase emplo
    * `reasoning` (Explanation of synthesis details)
    * `contributions` (List of model strengths)
    * `confidence` (Low, Medium, or High)
+
+---
+
+## 🌊 Real-Time Streaming Implementation
+
+Instead of showing static loading state indicators, the pipeline uses a **Server-Sent Events (SSE)** stream (`text/event-stream`) to feed data to the client in real-time. This is achieved in two stages:
+
+### 1. Concurrent Model Multiplexing
+- The backend API route (`src/app/api/orchestrate/route.js`) creates a custom `ReadableStream`.
+- It initiates async generators using `streamText` for all selected models concurrently.
+- As chunks from Gemini, Groq, or Mistral Nemo arrive, they are pushed into a shared SSE event stream using matching tags (e.g. `data: {"type": "model-chunk", "modelId": "...", "text": "..."}`).
+- The browser stream reader splits these events on the fly, rendering the text live inside separate tab panels.
+
+### 2. Stateful JSON String Scanner (Evaluator Stream)
+- Enforcing a strict JSON Zod schema is difficult when streaming, as JSON is invalid until the closing brace `}` is received.
+- **The Solution**: The evaluator is prompted to output the `"finalAnswer"` property first. 
+- While the evaluator streams the raw JSON text, a **stateful character-by-character scanner** searches the accumulating buffer for `"finalAnswer"` and extracts the contents of its double-quoted string.
+- These extracted characters are instantly pushed to the browser as `evaluator-chunk` events, enabling word-by-word streaming of the synthesized answer card.
+- On stream completion, the backend locates the outermost curly braces, cleans the JSON, validates it against the Zod schema, and sends the final structure containing reasoning, confidence, and strengths.
 
 ---
 
