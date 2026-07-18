@@ -81,7 +81,7 @@ export default function Home() {
 
   return (
     <main className={`min-h-screen transition-colors duration-300 flex flex-col items-center p-4 md:p-8 ${themeBg}`}>
-      <div className="w-full max-w-7xl flex flex-col gap-6">
+      <div className="w-full max-w-[1700px] flex flex-col gap-6">
         
         {/* Header Row */}
         <header className="flex justify-between items-center py-2 border-b border-dashed pb-4 border-stone-400 dark:border-[#3A3A3C]">
@@ -293,7 +293,7 @@ export default function Home() {
                 </div>
 
                 {/* Tab Content (Fills remaining height) */}
-                <div className={`flex-1 p-4 rounded-xl min-h-[300px] max-h-[600px] overflow-y-auto ${themeResponseBox}`}>
+                <div className={`flex-1 p-4 rounded-xl min-h-[300px] max-h-[480px] overflow-y-auto ${themeResponseBox}`}>
                   <div className="leading-relaxed whitespace-pre-line text-xs opacity-90">
                     {result.responses[activeTab]?.response}
                   </div>
