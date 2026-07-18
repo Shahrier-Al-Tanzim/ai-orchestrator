@@ -12,6 +12,7 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [isDarkMode, setIsDarkMode] = useState(false); // Default to Beige Light Mode
 
   // Enforce selection limit of max 3 models for the parallel runner
   const handleModelToggle = (modelId) => {
@@ -66,49 +67,92 @@ export default function Home() {
     }
   };
 
+  // Color Palette Definitions (Light: Sand Beige/Editorial vs. Dark: Matte Black/Ash)
+  const themeBg = isDarkMode ? 'bg-[#1C1C1E] text-[#E5E5EA]' : 'bg-[#E5DFD3] text-[#1c1917]';
+  const themeCard = isDarkMode ? 'bg-[#2C2C2E] border-[#3A3A3C] shadow-md' : 'bg-[#FAF8F5] border-stone-300 shadow-sm';
+  const themeBorder = isDarkMode ? 'border-[#3A3A3C]' : 'border-stone-300';
+  const themeSelect = isDarkMode ? 'bg-[#1C1C1E] text-[#E5E5EA] border-[#3A3A3C]' : 'bg-white text-[#1c1917] border-stone-300';
+  const themeInput = isDarkMode ? 'bg-[#1C1C1E] border-[#3A3A3C] text-white placeholder-zinc-500' : 'bg-white border-stone-300 text-[#1c1917] placeholder-stone-400';
+  const themeResponseBox = isDarkMode ? 'bg-[#1C1C1E]/80 border-[#3A3A3C]' : 'bg-white border-stone-300';
+  const themeContributionCard = isDarkMode ? 'bg-[#1C1C1E]/50 border-[#3A3A3C]/85' : 'bg-[#E5DFD3]/40 border-stone-300/80';
+  const themeButton = isDarkMode 
+    ? 'bg-zinc-100 text-zinc-950 hover:bg-zinc-200' 
+    : 'bg-[#1c1917] text-[#FAF8F5] hover:bg-stone-800';
+
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center p-4 md:p-8">
+    <main className={`min-h-screen transition-colors duration-300 flex flex-col items-center p-4 md:p-8 ${themeBg}`}>
       <div className="w-full max-w-7xl flex flex-col gap-6">
         
-        {/* Header */}
-        <header className="text-center py-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            Self-Consistency AI Orchestrator
-          </h1>
-          <p className="mt-1 text-slate-400 text-sm max-w-xl mx-auto">
-            Run prompts concurrently, compile differences, and synthesize answers using structured evaluation.
-          </p>
+        {/* Header Row */}
+        <header className="flex justify-between items-center py-2 border-b border-dashed pb-4 border-stone-400 dark:border-[#3A3A3C]">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight font-serif">
+              AI Orchestrator
+            </h1>
+            <p className="mt-0.5 text-xs text-stone-600 dark:text-zinc-400">
+              Self-Consistency multi-LLM synthesis pipeline.
+            </p>
+          </div>
+          
+          {/* Theme Toggle Button */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            aria-label="Toggle Theme"
+            className={`p-2 rounded-full border transition-all duration-200 hover:scale-105 ${
+              isDarkMode ? 'bg-[#2C2C2E] border-[#3A3A3C] text-amber-400' : 'bg-white border-stone-300 text-zinc-950 shadow-sm'
+            }`}
+          >
+            {isDarkMode ? (
+              // Sun Icon
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="2 2 20 20" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+              </svg>
+            ) : (
+              // Moon Icon
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="2 2 20 20" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
         </header>
 
         {/* Top Row: Configuration Settings */}
-        <section className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-          {/* Target Models Checklist */}
-          <div className="md:col-span-2 flex flex-col gap-2">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <section className={`border rounded-2xl p-5 grid grid-cols-1 md:grid-cols-3 gap-6 items-center transition-all duration-300 ${themeCard}`}>
+          
+          {/* Target Models - Pill Selection */}
+          <div className="md:col-span-2 flex flex-col gap-2.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
               Parallel Models (Select up to 3)
             </span>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               {AVAILABLE_MODELS.map(model => {
                 const isChecked = selectedModels.includes(model.id);
                 const isDisabled = !isChecked && selectedModels.length >= 3;
+                
+                let pillStyle = '';
+                if (isChecked) {
+                  // Active (selected) states
+                  pillStyle = isDarkMode
+                    ? 'bg-zinc-100 text-zinc-950 border-zinc-100 shadow-sm'
+                    : 'bg-[#1c1917] text-[#FAF8F5] border-[#1c1917] shadow-sm';
+                } else {
+                  // Inactive states
+                  pillStyle = isDarkMode
+                    ? 'bg-[#1C1C1E] text-zinc-400 border-[#3A3A3C] hover:bg-[#3A3A3C] hover:text-zinc-200'
+                    : 'bg-white text-stone-600 border-stone-300 hover:bg-stone-100 hover:text-stone-900';
+                }
+
                 return (
-                  <label
+                  <button
                     key={model.id}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer text-xs transition-all duration-200 ${
-                      isChecked
-                        ? 'bg-indigo-950/40 border-indigo-500 text-slate-100'
-                        : 'bg-slate-950/40 border-slate-850 text-slate-400 hover:border-slate-700'
-                    } ${isDisabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+                    disabled={isDisabled}
+                    onClick={() => handleModelToggle(model.id)}
+                    className={`px-4 py-2 rounded-full border text-xs font-semibold select-none transition-all duration-200 ${pillStyle} ${
+                      isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02]'
+                    }`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      disabled={isDisabled}
-                      onChange={() => handleModelToggle(model.id)}
-                      className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-900 w-3.5 h-3.5"
-                    />
-                    <span className="font-medium">{model.label}</span>
-                  </label>
+                    {model.label}
+                  </button>
                 );
               })}
             </div>
@@ -116,13 +160,13 @@ export default function Home() {
 
           {/* Evaluator Selector */}
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
               Evaluator Model
             </span>
             <select
               value={evaluatorId}
               onChange={(e) => setEvaluatorId(e.target.value)}
-              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all duration-200"
+              className={`w-full p-2.5 rounded-xl text-xs outline-none focus:ring-1 focus:ring-stone-400 transition-all duration-200 ${themeSelect}`}
             >
               {AVAILABLE_MODELS.map(model => (
                 <option key={model.id} value={model.id}>
@@ -134,7 +178,7 @@ export default function Home() {
         </section>
 
         {/* Second Row: Question Input */}
-        <section className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row gap-4 items-stretch">
+        <section className={`border rounded-2xl p-5 flex flex-col md:flex-row gap-4 items-stretch transition-all duration-300 ${themeCard}`}>
           <div className="flex-1">
             <textarea
               id="prompt-input"
@@ -142,13 +186,13 @@ export default function Home() {
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Enter your question here..."
               rows={2}
-              className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none resize-none text-sm transition-all duration-200"
+              className={`w-full p-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-stone-400 resize-none transition-all duration-200 ${themeInput}`}
             />
           </div>
           <button
             onClick={handleRun}
             disabled={isLoading}
-            className={`md:w-60 flex items-center justify-center rounded-xl font-bold transition-all duration-200 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-sm py-4 md:py-0 ${
+            className={`md:w-60 flex items-center justify-center rounded-xl font-bold transition-all duration-200 text-sm py-4 md:py-0 ${themeButton} ${
               isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]'
             }`}
           >
@@ -158,16 +202,16 @@ export default function Home() {
 
         {/* Error Alert */}
         {error && (
-          <div className="p-4 bg-red-950/40 border border-red-800 rounded-xl text-red-300 text-sm">
+          <div className="p-4 bg-red-950/20 border border-red-800/40 rounded-xl text-red-400 text-sm">
             <strong>Error: </strong> {error}
           </div>
         )}
 
         {/* Running Loader */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center p-12 bg-slate-900/40 border border-slate-800 rounded-2xl">
-            <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-4 text-slate-400 text-xs font-medium animate-pulse">{statusText}</p>
+          <div className={`flex flex-col items-center justify-center p-12 border rounded-2xl ${themeCard}`}>
+            <div className={`w-8 h-8 border-3 rounded-full animate-spin ${isDarkMode ? 'border-zinc-300 border-t-transparent' : 'border-stone-800 border-t-transparent'}`}></div>
+            <p className="mt-4 text-xs font-semibold animate-pulse opacity-75">{statusText}</p>
           </div>
         )}
 
@@ -179,41 +223,41 @@ export default function Home() {
             <div className="flex flex-col gap-6">
               
               {/* Synthesized Answer Card */}
-              <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 relative overflow-hidden flex flex-col">
-                <div className="flex justify-between items-center mb-3 border-b border-slate-800 pb-2.5">
-                  <h3 className="text-lg font-bold text-slate-200">
+              <div className={`border rounded-2xl p-5 relative overflow-hidden flex flex-col transition-all duration-300 ${themeCard}`}>
+                <div className={`flex justify-between items-center mb-3 border-b pb-2.5 ${themeBorder}`}>
+                  <h3 className="text-lg font-bold font-serif">
                     Synthesized Answer
                   </h3>
-                  <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full tracking-wider ${
-                    result.evaluation.confidence === 'high' ? 'bg-emerald-950/50 border border-emerald-500 text-emerald-400' :
-                    result.evaluation.confidence === 'medium' ? 'bg-amber-950/50 border border-amber-500 text-amber-400' :
-                    'bg-rose-950/50 border border-rose-500 text-rose-400'
+                  <span className={`px-2.5 py-0.5 text-[9px] font-extrabold rounded-full tracking-wider border ${
+                    result.evaluation.confidence === 'high' ? 'bg-emerald-950/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-400' :
+                    result.evaluation.confidence === 'medium' ? 'bg-amber-950/20 border-amber-500/50 text-amber-600 dark:text-amber-500' :
+                    'bg-rose-950/20 border-rose-500/50 text-rose-600 dark:text-rose-400'
                   }`}>
                     CONFIDENCE: {result.evaluation.confidence.toUpperCase()}
                   </span>
                 </div>
-                <div className="text-slate-300 leading-relaxed text-sm whitespace-pre-line flex-1">
+                <div className="leading-relaxed text-sm whitespace-pre-line flex-1 opacity-90">
                   {result.evaluation.finalAnswer}
                 </div>
               </div>
 
               {/* Evaluator Reasoning Card */}
-              <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-5">
-                <h3 className="text-lg font-bold text-slate-200 mb-3 border-b border-slate-800 pb-2.5">
+              <div className={`border rounded-2xl p-5 transition-all duration-300 ${themeCard}`}>
+                <h3 className={`text-lg font-bold font-serif mb-3 border-b pb-2.5 ${themeBorder}`}>
                   Evaluator Reasoning
                 </h3>
-                <p className="text-slate-300 leading-relaxed text-xs mb-4">
+                <p className="leading-relaxed text-xs mb-4 opacity-80">
                   {result.evaluation.reasoning}
                 </p>
 
-                <h4 className="text-xs font-bold tracking-wider text-slate-400 uppercase mb-2">
+                <h4 className="text-[10px] font-bold tracking-wider opacity-60 uppercase mb-2">
                   Model Strengths / Contributions
                 </h4>
                 <div className="flex flex-col gap-2.5">
                   {result.evaluation.contributions.map((contrib, i) => (
-                    <div key={i} className="p-3 bg-slate-950/40 border border-slate-850 rounded-xl flex flex-col gap-0.5">
-                      <strong className="text-xs text-indigo-400">{contrib.modelId}</strong>
-                      <p className="text-slate-300 text-xs mt-0.5">{contrib.strengths}</p>
+                    <div key={i} className={`p-3 border rounded-xl flex flex-col gap-0.5 ${themeContributionCard}`}>
+                      <strong className="text-xs text-stone-600 dark:text-zinc-300">{contrib.modelId}</strong>
+                      <p className="text-xs mt-0.5 opacity-90">{contrib.strengths}</p>
                     </div>
                   ))}
                 </div>
@@ -222,33 +266,35 @@ export default function Home() {
 
             {/* Right Column: Intermediate Model Outputs (Elongated) */}
             {result.responses && result.responses.length > 0 && (
-              <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 flex flex-col">
-                <div className="border-b border-slate-800 pb-2 mb-3">
-                  <h3 className="text-lg font-bold text-slate-200">
+              <div className={`border rounded-2xl p-5 flex flex-col transition-all duration-300 ${themeCard}`}>
+                <div className={`border-b pb-2 mb-3 ${themeBorder}`}>
+                  <h3 className="text-lg font-bold font-serif">
                     Intermediate Model Outputs
                   </h3>
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex border-b border-slate-800 mb-3 overflow-x-auto gap-2">
-                  {result.responses.map((resp, i) => (
-                    <button
-                      key={resp.modelId}
-                      onClick={() => setActiveTab(i)}
-                      className={`py-2 px-3 font-semibold text-xs border-b-2 transition-all duration-200 whitespace-nowrap ${
-                        activeTab === i
-                          ? 'border-indigo-500 text-indigo-400'
-                          : 'border-transparent text-slate-500 hover:text-slate-300'
-                      }`}
-                    >
-                      {resp.modelId} ({resp.duration}s)
-                    </button>
-                  ))}
+                <div className={`flex border-b mb-3 overflow-x-auto gap-2 ${themeBorder}`}>
+                  {result.responses.map((resp, i) => {
+                    const isActive = activeTab === i;
+                    const tabLine = isActive
+                      ? isDarkMode ? 'border-zinc-300 text-zinc-100' : 'border-stone-800 text-stone-900'
+                      : 'border-transparent text-stone-400 dark:text-zinc-500 hover:text-stone-900 dark:hover:text-zinc-300';
+                    return (
+                      <button
+                        key={resp.modelId}
+                        onClick={() => setActiveTab(i)}
+                        className={`py-2 px-3 font-semibold text-xs border-b-2 transition-all duration-200 whitespace-nowrap ${tabLine}`}
+                      >
+                        {resp.modelId} ({resp.duration}s)
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Tab Content (Fills remaining height) */}
-                <div className="flex-1 p-4 bg-slate-950/50 border border-slate-850 rounded-xl min-h-[300px] max-h-[600px] overflow-y-auto">
-                  <div className="text-slate-300 leading-relaxed whitespace-pre-line text-xs">
+                <div className={`flex-1 p-4 rounded-xl min-h-[300px] max-h-[600px] overflow-y-auto ${themeResponseBox}`}>
+                  <div className="leading-relaxed whitespace-pre-line text-xs opacity-90">
                     {result.responses[activeTab]?.response}
                   </div>
                 </div>
