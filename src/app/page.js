@@ -286,9 +286,11 @@ export default function Home() {
                   
                   {result && (
                     <span className={`px-2.5 py-0.5 text-[9px] font-extrabold rounded-full tracking-wider border ${
-                      result.evaluation.confidence === 'high' ? 'bg-emerald-950/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-400' :
-                      result.evaluation.confidence === 'medium' ? 'bg-amber-950/20 border-amber-500/50 text-amber-600 dark:text-amber-500' :
-                      'bg-rose-950/20 border-rose-500/50 text-rose-600 dark:text-rose-400'
+                      result.evaluation.confidence === 'high'
+                        ? 'bg-emerald-100 border-emerald-300 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-500/30 dark:text-emerald-400'
+                        : result.evaluation.confidence === 'medium'
+                        ? 'bg-amber-100 border-amber-300 text-amber-800 dark:bg-amber-950/40 dark:border-amber-500/30 dark:text-amber-400'
+                        : 'bg-rose-100 border-rose-300 text-rose-800 dark:bg-rose-950/40 dark:border-rose-500/30 dark:text-rose-400'
                     }`}>
                       CONFIDENCE: {result.evaluation.confidence.toUpperCase()}
                     </span>
@@ -296,16 +298,20 @@ export default function Home() {
                 </div>
                 
                 {/* Streams Evaluator Response Word by Word */}
-                <div className="leading-relaxed text-sm whitespace-pre-line flex-1 opacity-90 min-h-[100px]">
-                  {streamingFinalAnswer || (streamProgress === 'models' ? (
-                    <span className="text-stone-400 dark:text-zinc-500 italic text-xs">
-                      Waiting for parallel models to finish...
-                    </span>
+                <div className="leading-relaxed text-sm flex-1 opacity-90 min-h-[100px]">
+                  {streamingFinalAnswer ? (
+                    <div className="space-y-1">{formatMarkdown(streamingFinalAnswer)}</div>
                   ) : (
-                    <span className="text-stone-400 dark:text-zinc-500 italic text-xs animate-pulse">
-                      Synthesizing response...
-                    </span>
-                  ))}
+                    streamProgress === 'models' ? (
+                      <span className="text-stone-400 dark:text-zinc-500 italic text-xs">
+                        Waiting for parallel models to finish...
+                      </span>
+                    ) : (
+                      <span className="text-stone-400 dark:text-zinc-500 italic text-xs animate-pulse">
+                        Synthesizing response...
+                      </span>
+                    )
+                  )}
                 </div>
               </div>
 
@@ -317,9 +323,9 @@ export default function Home() {
                 
                 {result ? (
                   <>
-                    <p className="leading-relaxed text-xs mb-4 opacity-80">
-                      {result.evaluation.reasoning}
-                    </p>
+                    <div className="leading-relaxed text-xs mb-4 opacity-80 space-y-1">
+                      {formatMarkdown(result.evaluation.reasoning)}
+                    </div>
 
                     <h4 className="text-[10px] font-bold tracking-wider opacity-60 uppercase mb-2">
                       Model Strengths / Contributions
@@ -327,7 +333,7 @@ export default function Home() {
                     <div className="flex flex-col gap-2.5">
                       {result.evaluation.contributions.map((contrib, i) => (
                         <div key={i} className={`p-3 border rounded-xl flex flex-col gap-0.5 ${themeContributionCard}`}>
-                          <strong className="text-xs text-stone-600 dark:text-zinc-300">{contrib.modelId}</strong>
+                          <strong className="text-xs text-stone-900 dark:text-zinc-200">{contrib.modelId}</strong>
                           <p className="text-xs mt-0.5 opacity-90">{contrib.strengths}</p>
                         </div>
                       ))}
@@ -372,8 +378,10 @@ export default function Home() {
 
               {/* Tab Content (Fills remaining height) */}
               <div className={`flex-1 p-4 rounded-xl min-h-[300px] max-h-[480px] overflow-y-auto ${themeResponseBox}`}>
-                <div className="leading-relaxed whitespace-pre-line text-xs opacity-90">
-                  {streamingOutputs[selectedModels[activeTab]] || (
+                <div className="leading-relaxed text-xs opacity-90 space-y-1">
+                  {streamingOutputs[selectedModels[activeTab]] ? (
+                    formatMarkdown(streamingOutputs[selectedModels[activeTab]])
+                  ) : (
                     <span className="text-stone-400 dark:text-zinc-500 italic">
                       Model stream is starting...
                     </span>
@@ -387,4 +395,54 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+// Lightweight Markdown Formatter
+function formatMarkdown(text) {
+  if (!text) return '';
+  const lines = text.split('\n');
+  return lines.map((line, idx) => {
+    // 1. Headers
+    if (line.startsWith('### ')) {
+      return <h4 key={idx} className="text-xs font-extrabold mt-3 mb-1.5 font-serif text-stone-800 dark:text-zinc-200">{line.replace('### ', '')}</h4>;
+    }
+    if (line.startsWith('## ')) {
+      return <h3 key={idx} className="text-sm font-bold mt-4 mb-2 font-serif text-stone-800 dark:text-zinc-200">{line.replace('## ', '')}</h3>;
+    }
+    if (line.startsWith('# ')) {
+      return <h2 key={idx} className="text-base font-bold mt-5 mb-2.5 font-serif text-stone-900 dark:text-zinc-100">{line.replace('# ', '')}</h2>;
+    }
+
+    // 2. Unordered lists
+    if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+      const cleanLine = line.trim().replace(/^[-*]\s+/, '');
+      return (
+        <li key={idx} className="list-disc ml-4 mb-0.5 text-xs leading-relaxed opacity-95">
+          {parseInlineMarkdown(cleanLine)}
+        </li>
+      );
+    }
+
+    // 3. Spacing / Paragraphs
+    if (line.trim() === '') {
+      return <div key={idx} className="h-1.5" />;
+    }
+
+    return (
+      <p key={idx} className="mb-1 text-xs leading-relaxed opacity-95">
+        {parseInlineMarkdown(line)}
+      </p>
+    );
+  });
+}
+
+// Parses inline bolding (**text**)
+function parseInlineMarkdown(text) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-bold text-stone-900 dark:text-zinc-100">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
 }
