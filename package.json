@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.17",
+    "@ai-sdk/groq": "^4.0.12",
     "@ai-sdk/openai": "^4.0.15",
     "ai": "^7.0.30",
     "dotenv": "^17.4.2",
